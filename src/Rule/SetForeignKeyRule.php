@@ -23,10 +23,6 @@ class SetForeignKeyRule implements Rule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$node instanceof Node\Stmt\ClassMethod) {
-            return [];
-        }
-
         if ($node->name->name !== 'update') {
             return [];
         }
@@ -52,6 +48,7 @@ class SetForeignKeyRule implements Rule
             if (str_contains($string->value, 'FOREIGN_KEY_CHECKS')) {
                 $errors[] = RuleErrorBuilder::message('Do not disable FOREIGN KEY checks in migrations. Delete the data in the right order')
                     ->line($string->getLine())
+                    ->identifier('shopware.foreign.key.checks')
                     ->build();
             }
         }

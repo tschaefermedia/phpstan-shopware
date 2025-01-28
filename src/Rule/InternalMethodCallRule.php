@@ -13,6 +13,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MissingMethodFromReflectionException;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 use Shopware\PhpStan\Helper\NamespaceChecker;
 
 /**
@@ -31,8 +32,6 @@ class InternalMethodCallRule implements Rule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        assert($node instanceof MethodCall);
-
         if (!$node->name instanceof Identifier) {
             return [];
         }
@@ -63,7 +62,9 @@ class InternalMethodCallRule implements Rule
             }
             if (!NamespaceChecker::arePartOfTheSamePackage($scope->getNamespace(), $methodOwnerNamespace)) {
                 return [
-                    sprintf('Call of internal method %s::%s Please refrain from using methods which are annotated with @internal in the Shopware 6 repository.', $classInfo->getName(), $methodDetails->getName()),
+                    RuleErrorBuilder::message(sprintf('Call of internal method %s::%s Please refrain from using methods which are annotated with @internal in the Shopware 6 repository.', $classInfo->getName(), $methodDetails->getName()))
+                        ->identifier('shopware.internal_method_call')
+                        ->build(),
                 ];
             }
         }

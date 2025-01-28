@@ -11,6 +11,7 @@ use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
+use PHPStan\Rules\RuleErrorBuilder;
 use Shopware\PhpStan\Helper\NamespaceChecker;
 
 /**
@@ -34,8 +35,6 @@ class InternalFunctionCallRule implements Rule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        assert($node instanceof FuncCall);
-
         if (!$node->name instanceof Node\Name) {
             return [];
         }
@@ -54,7 +53,10 @@ class InternalFunctionCallRule implements Rule
         }
 
         return [
-            sprintf('Call of internal function %s Please refrain from using functions which are annotated with @internal in the Shopware 6 repository.', $function->getName()),
+            RuleErrorBuilder::message(sprintf('Call of internal function %s Please refrain from using functions which are annotated with @internal in the Shopware 6 repository.', $function->getName()))
+                ->line($node->getLine())
+                ->identifier('shopware.internal_function_call')
+                ->build(),
         ];
     }
 }

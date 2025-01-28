@@ -34,10 +34,6 @@ class DisallowFunctionsRule implements Rule
      */
     public function processNode(Node $node, Scope $scope): array
     {
-        if (!$node instanceof FuncCall) {
-            return [];
-        }
-
         if (!$node->name instanceof Node\Name) {
             return [];
         }
@@ -46,7 +42,10 @@ class DisallowFunctionsRule implements Rule
 
         if (\in_array($name, self::NOT_ALLOWED_FUNCTIONS, true)) {
             return [
-                RuleErrorBuilder::message(\sprintf('Do not use %s function in code.', $name))->build(),
+                RuleErrorBuilder::message(\sprintf('Do not use %s function in code.', $name))
+                    ->line($node->getLine())
+                    ->identifier('shopware.disallow_functions')
+                    ->build(),
             ];
         }
 
