@@ -20,7 +20,7 @@ class MethodBecomesAbstractRuleTest extends RuleTestCase
                 <<<EOF
 Method EntityExtension::new becomes abstract, but is not declared in the extending class. Implement the method for compatibility with next major version.
 EOF,
-                18,
+                13,
             ],
         ]);
     }

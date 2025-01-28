@@ -18,9 +18,7 @@ use PHPStan\Rules\RuleErrorBuilder;
  */
 class MethodBecomesAbstractRule implements Rule
 {
-    public function __construct(private readonly ReflectionProvider $reflectionProvider)
-    {
-    }
+    public function __construct(private readonly ReflectionProvider $reflectionProvider) {}
 
     public function getNodeType(): string
     {
@@ -41,17 +39,23 @@ class MethodBecomesAbstractRule implements Rule
 
         foreach ($node->stmts as $stmt) {
             if ($stmt instanceof ClassMethod) {
-                $existingMethods[] = (string)$stmt->name;
+                $existingMethods[] = (string) $stmt->name;
             }
         }
 
         /** @var ClassReflection $parent */
         foreach ([$extendedClass, ...$extendedClass->getParents()] as $parent) {
             foreach ($parent->getNativeReflection()->getMethods() as $method) {
+                $docComment = $method->getDocComment();
+
+                if ($docComment === false) {
+                    continue;
+                }
+
                 if (
                     !$method->isAbstract() &&
                     ($method->isPublic() || $method->isProtected()) &&
-                    str_contains($method->getDocComment(), '@abstract') &&
+                    str_contains($docComment, '@abstract') &&
                     !in_array($method->getName(), $existingMethods, true)
                 ) {
                     $errors[] = RuleErrorBuilder::message(sprintf('Method %s::%s becomes abstract, but is not declared in the extending class. Implement the method for compatibility with next major version.', $parent->getName(), $method->getName()))
