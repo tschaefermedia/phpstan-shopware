@@ -6,3 +6,9 @@ rules:
     - Shopware\PhpStan\Rule\SetForeignKeyRule
     - Shopware\PhpStan\Rule\MethodBecomesAbstractRule
     - Shopware\PhpStan\Rule\ScheduledTaskTooLowIntervalRule
+
+services:
+    -
+        class: Shopware\PhpStan\Type\CollectionHasSpecifyingExtension
+        tags:
+            - phpstan.typeSpecifier.methodTypeSpecifyingExtension
