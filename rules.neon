@@ -4,3 +4,4 @@ rules:
     - Shopware\PhpStan\Rule\DisallowFunctionsRule
     - Shopware\PhpStan\Rule\DisallowDefaultContextCreation
     - Shopware\PhpStan\Rule\SetForeignKeyRule
+    - Shopware\PhpStan\Rule\MethodBecomesAbstractRule

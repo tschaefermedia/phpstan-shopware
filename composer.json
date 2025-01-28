@@ -21,7 +21,10 @@
   "autoload-dev": {
     "psr-4": {
       "Shopware\\PhpStan\\Tests\\": "tests/"
-    }
+    },
+    "classmap": [
+      "tests/data"
+    ]
   },
   "config": {
     "sort-packages": true,
