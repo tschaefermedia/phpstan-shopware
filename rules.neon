@@ -6,6 +6,7 @@ rules:
     - Shopware\PhpStan\Rule\SetForeignKeyRule
     - Shopware\PhpStan\Rule\MethodBecomesAbstractRule
     - Shopware\PhpStan\Rule\ScheduledTaskTooLowIntervalRule
+    - Shopware\PhpStan\Rule\InternalClassExtendsRule
 
 services:
     -
