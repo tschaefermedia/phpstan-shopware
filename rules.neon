@@ -7,6 +7,7 @@ rules:
     - Shopware\PhpStan\Rule\MethodBecomesAbstractRule
     - Shopware\PhpStan\Rule\ScheduledTaskTooLowIntervalRule
     - Shopware\PhpStan\Rule\InternalClassExtendsRule
+    - Shopware\PhpStan\Rule\ForbidGlobBraceRule
 
 services:
     -
