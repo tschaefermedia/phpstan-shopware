@@ -8,6 +8,7 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Rules\Rule;
 use PHPStan\Rules\RuleErrorBuilder;
 use Shopware\Core\Framework\Migration\MigrationStep;
+use Shopware\Core\Framework\Plugin;
 
 /**
  * @implements Rule<Node\Stmt\ClassMethod>
@@ -27,14 +28,13 @@ class SetForeignKeyRule implements Rule
             return [];
         }
 
-
         $class = $scope->getClassReflection();
 
         if ($class === null) {
             return [];
         }
 
-        if ($class->getParentClass()?->getName() !== MigrationStep::class) {
+        if ($class->getParentClass()?->getName() !== MigrationStep::class && $class->getParentClass()?->getName() !== Plugin::class) {
             return [];
         }
 
