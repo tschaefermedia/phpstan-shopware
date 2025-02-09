@@ -1,4 +1,5 @@
 rules:
+    - Shopware\PhpStan\Rule\ClassExtendUsesAbstractClassWhenExisting
     - Shopware\PhpStan\Rule\DisallowDefaultContextCreation
     - Shopware\PhpStan\Rule\ForbidGlobBraceRule
     - Shopware\PhpStan\Rule\DisallowFunctionsRule
