@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Tests\Rule;
 
 use PHPStan\Rules\Rule;
@@ -18,7 +20,7 @@ class InternalClassExtendsRuleTest extends RuleTestCase
         $this->analyse([__DIR__ . '/../data/InternalClassExtendsRule/internal-class.php'], [
             [
                 'Class PublicController extends internal class InternalController. Please refrain from extending classes which are annotated with @internal.',
-                8,
+                10,
             ],
         ]);
     }

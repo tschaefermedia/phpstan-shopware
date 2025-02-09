@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Tests\Rule;
 
 use PHPStan\Rules\Rule;
@@ -13,7 +15,7 @@ class ScheduledTaskTooLowIntervalRuleTest extends RuleTestCase
         $this->analyse([__DIR__ . '/../data/ScheduledTaskTooLowIntervalRule/too-low-interval.php'], [
             [
                 'Scheduled task has an interval of 1 seconds, it should have an minimum of 3600 seconds.',
-                12,
+                14,
             ],
         ]);
     }

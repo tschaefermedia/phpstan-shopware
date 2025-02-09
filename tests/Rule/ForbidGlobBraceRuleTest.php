@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Tests\Rule;
 
 use PHPStan\Testing\RuleTestCase;
@@ -21,11 +23,11 @@ final class ForbidGlobBraceRuleTest extends RuleTestCase
         $this->analyse([__DIR__ . '/../data/ForbidGlobBraceRule/glob.php'], [
             [
                 'Usage of GLOB_BRACE constant is forbidden. GLOB_BRACE is not supported on any platform.',
-                3,
+                5,
             ],
             [
                 'Usage of GLOB_BRACE constant is forbidden. GLOB_BRACE is not supported on any platform.',
-                6,
+                8,
             ],
         ]);
     }

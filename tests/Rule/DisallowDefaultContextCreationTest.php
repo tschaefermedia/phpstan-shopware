@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Tests\Rule;
 
 use PHPStan\Rules\Rule;
@@ -22,7 +24,7 @@ Do not use Shopware\Core\Framework\Context::createDefaultContext() function in c
     💡 • If you are in a CLI context, use %s::createCliContext() instead.
 • If you are in a web context, pass down the context from the controller.
 EOF,
-                3,
+                5,
             ],
         ]);
     }

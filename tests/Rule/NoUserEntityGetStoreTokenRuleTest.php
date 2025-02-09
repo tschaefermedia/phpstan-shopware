@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Tests\Rule;
 
 use PHPStan\Rules\Rule;
@@ -13,7 +15,7 @@ class NoUserEntityGetStoreTokenRuleTest extends RuleTestCase
         $this->analyse([__DIR__ . '/../data/NoUserEntityGetStoreTokenRule/context.php'], [
             [
                 'Its not allowed to gather the store token',
-                6,
+                8,
             ],
         ]);
     }

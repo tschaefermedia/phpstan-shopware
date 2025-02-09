@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Tests\Rule;
 
 use PHPStan\Rules\Rule;
@@ -15,7 +17,7 @@ class ClassExtendUsesAbstractClassWhenExistingTest extends RuleTestCase
                 <<<EOF
 Class Plugin should extend AbstractCore to not break typehints
 EOF,
-                16,
+                18,
             ],
         ]);
     }

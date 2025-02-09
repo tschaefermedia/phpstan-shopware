@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Tests\Rule;
 
 use PHPStan\Rules\Rule;
@@ -20,7 +22,7 @@ class MethodBecomesAbstractRuleTest extends RuleTestCase
                 <<<EOF
 Method EntityExtension::new becomes abstract, but is not declared in the extending class. Implement the method for compatibility with next major version.
 EOF,
-                13,
+                15,
             ],
         ]);
     }
@@ -32,7 +34,7 @@ EOF,
                 <<<EOF
 Method MethodBecomesAbstractRule\AbstractClassLocation\EntityExtension::new becomes abstract, but is not declared in the extending class. Implement the method for compatibility with next major version.
 EOF,
-                17,
+                19,
             ],
         ]);
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Type;
 
 use PhpParser\Node\Expr\MethodCall;

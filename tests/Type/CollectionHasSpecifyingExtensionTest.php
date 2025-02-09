@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Tests\Type;
 
 use PHPStan\Testing\TypeInferenceTestCase;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Tests\Rule;
 
 use PHPStan\Rules\Rule;
@@ -13,7 +15,7 @@ class SetForeignKeyRuleTest extends RuleTestCase
         $this->analyse([__DIR__ . '/../data/SetForeignKeyRule/foreign-key.php'], [
             [
                 'Do not disable FOREIGN KEY checks in migrations. Delete the data in the right order',
-                15,
+                17,
             ],
         ]);
     }
