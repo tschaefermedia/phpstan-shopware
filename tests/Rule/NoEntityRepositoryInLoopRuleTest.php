@@ -20,7 +20,7 @@ class NoEntityRepositoryInLoopRuleTest extends RuleTestCase
 
     public function testRule(): void
     {
-        $this->analyse([__DIR__ . '/Fixtures/NoEntityRepositoryInLoop/NoEntityRepositoryInLoop.php'], [
+        $this->analyse([__DIR__ . '/fixtures/NoEntityRepositoryInLoop/NoEntityRepositoryInLoop.php'], [
             [
                 'EntityRepository method calls are not allowed within loops. This can lead to unexpected N:1 queries.',
                 20,
