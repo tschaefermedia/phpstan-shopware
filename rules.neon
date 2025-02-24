@@ -14,6 +14,7 @@ rules:
     - Shopware\PhpStan\Rule\ScheduledTaskTooLowIntervalRule
     - Shopware\PhpStan\Rule\SetForeignKeyRule
     - Shopware\PhpStan\Rule\NoEntityRepositoryInLoopRule
+    - Shopware\PhpStan\Rule\NoSuperglobalsRule
 
 services:
     -
