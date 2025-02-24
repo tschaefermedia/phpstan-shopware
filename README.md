@@ -31,6 +31,42 @@ or you use PHPStan Extension Installer
 - Improved type inference for Shopware core classes
 - Additional checks for common Shopware development pitfalls
 
+### Available Rules
+
+Here's a comprehensive list of all available rules:
+
+1. **NoSuperglobalsRule**: Prevents usage of superglobals (`$_GET`, `$_POST`, `$_FILES`, `$_REQUEST`). Use proper request objects instead.
+
+2. **DisallowFunctionsRule**: Prevents usage of certain disallowed functions in the codebase.
+
+3. **NoEntityRepositoryInLoopRule**: Prevents EntityRepository method calls within loops to avoid N+1 query problems.
+
+4. **NoSessionInPaymentHandlerAndStoreApiRule**: Prevents usage of session in payment handlers and Store API contexts.
+
+5. **NoSymfonySessionInConstructorRule**: Prevents injection of Symfony Session in constructor to avoid early session starts.
+
+6. **ForbidGlobBraceRule**: Prevents usage of glob brace expansion for better cross-platform compatibility.
+
+7. **InternalClassExtendsRule**: Ensures proper extension of internal classes.
+
+8. **NoUserEntityGetStoreTokenRule**: Prevents direct access to store tokens from User entities.
+
+9. **MethodBecomesAbstractRule**: Checks for methods that should be abstract.
+
+10. **ClassExtendUsesAbstractClassWhenExisting**: Enforces the use of abstract classes when they exist.
+
+11. **NoDALFilterByID**: Prevents direct ID filtering in DAL queries.
+
+12. **ScheduledTaskTooLowIntervalRule**: Ensures scheduled tasks don't have too low intervals.
+
+13. **DisallowDefaultContextCreation**: Prevents creation of default contexts in inappropriate places.
+
+14. **SetForeignKeyRule**: Enforces proper foreign key handling.
+
+15. **InternalFunctionCallRule**: Controls usage of internal functions.
+
+16. **InternalMethodCallRule**: Controls usage of internal methods.
+
 ## Configuration
 
 You can customize the behavior of these rules by adding configuration to your `phpstan.neon` file. See the [configuration section](#configuration) for more details.
