@@ -13,6 +13,7 @@ rules:
     - Shopware\PhpStan\Rule\NoUserEntityGetStoreTokenRule
     - Shopware\PhpStan\Rule\ScheduledTaskTooLowIntervalRule
     - Shopware\PhpStan\Rule\SetForeignKeyRule
+    - Shopware\PhpStan\Rule\NoEntityRepositoryInLoopRule
 
 services:
     -
