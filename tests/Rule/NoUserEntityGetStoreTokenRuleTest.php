@@ -12,7 +12,7 @@ class NoUserEntityGetStoreTokenRuleTest extends RuleTestCase
 {
     public function testAnalyse(): void
     {
-        $this->analyse([__DIR__ . '/../data/NoUserEntityGetStoreTokenRule/context.php'], [
+        $this->analyse([__DIR__ . '/fixtures/NoUserEntityGetStoreTokenRule/context.php'], [
             [
                 'Its not allowed to gather the store token',
                 8,

@@ -20,7 +20,7 @@ class NoSymfonySessionInConstructorTest extends RuleTestCase
 
     public function testRule(): void
     {
-        $this->analyse([__DIR__ . '/../data/NoSymfonySessionInConstructorRule/NoSymfonySessionInConstructor.php'], [
+        $this->analyse([__DIR__ . '/fixtures/NoSymfonySessionInConstructorRule/NoSymfonySessionInConstructor.php'], [
             [
                 'Symfony Session should not be called in constructor. Consider using it in the method where it\'s needed.',
                 16,

@@ -20,7 +20,7 @@ final class ForbidGlobBraceRuleTest extends RuleTestCase
 
     public function testRule(): void
     {
-        $this->analyse([__DIR__ . '/../data/ForbidGlobBraceRule/glob.php'], [
+        $this->analyse([__DIR__ . '/fixtures/ForbidGlobBraceRule/glob.php'], [
             [
                 'Usage of GLOB_BRACE constant is forbidden. GLOB_BRACE is not supported on any platform.',
                 5,

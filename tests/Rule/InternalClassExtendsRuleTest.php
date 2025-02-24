@@ -17,7 +17,7 @@ class InternalClassExtendsRuleTest extends RuleTestCase
 
     public function testInternalClassExtendsRule(): void
     {
-        $this->analyse([__DIR__ . '/../data/InternalClassExtendsRule/internal-class.php'], [
+        $this->analyse([__DIR__ . '/fixtures/InternalClassExtendsRule/internal-class.php'], [
             [
                 'Class PublicController extends internal class InternalController. Please refrain from extending classes which are annotated with @internal.',
                 10,

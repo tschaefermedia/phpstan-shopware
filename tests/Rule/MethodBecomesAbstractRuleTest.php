@@ -17,7 +17,7 @@ class MethodBecomesAbstractRuleTest extends RuleTestCase
 {
     public function testAnalyse(): void
     {
-        $this->analyse([ __DIR__ . '/../data/MethodBecomesAbstractRule/impl.php'], [
+        $this->analyse([ __DIR__ . '/fixtures/MethodBecomesAbstractRule/impl.php'], [
             [
                 <<<EOF
 Method EntityExtension::new becomes abstract, but is not declared in the extending class. Implement the method for compatibility with next major version.
@@ -29,7 +29,7 @@ EOF,
 
     public function testAnalyseWithNamespace(): void
     {
-        $this->analyse([ __DIR__ . '/../data/MethodBecomesAbstractRule/ns-test.php'], [
+        $this->analyse([ __DIR__ . '/fixtures/MethodBecomesAbstractRule/ns-test.php'], [
             [
                 <<<EOF
 Method MethodBecomesAbstractRule\AbstractClassLocation\EntityExtension::new becomes abstract, but is not declared in the extending class. Implement the method for compatibility with next major version.

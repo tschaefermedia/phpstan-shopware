@@ -17,7 +17,7 @@ class DisallowDefaultContextCreationTest extends RuleTestCase
 {
     public function testAnalyse(): void
     {
-        $this->analyse([__DIR__ . '/../data/DisallowDefaultContextCreation/context.php'], [
+        $this->analyse([__DIR__ . '/fixtures/DisallowDefaultContextCreation/context.php'], [
             [
                 <<<EOF
 Do not use Shopware\Core\Framework\Context::createDefaultContext() function in code.

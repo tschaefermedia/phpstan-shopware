@@ -10,7 +10,7 @@ class CollectionHasSpecifyingExtensionTest extends TypeInferenceTestCase
 {
     public function testCollectionHas(): void
     {
-        foreach (static::gatherAssertTypes(__DIR__ . '/../data/CollectionHasSpecifyingExtension/collection_has.php') as $args) {
+        foreach (static::gatherAssertTypes(__DIR__ . '/fixtures/CollectionHasSpecifyingExtension/collection_has.php') as $args) {
             // because of the autoload issue we can not use data providers as phpstan does itself,
             // therefore we need to rely on this hacks
             $assertType = array_shift($args);
@@ -23,7 +23,7 @@ class CollectionHasSpecifyingExtensionTest extends TypeInferenceTestCase
     public static function getAdditionalConfigFiles(): array
     {
         return [
-            __DIR__ . '/../data/CollectionHasSpecifyingExtension/extension.neon',
+            __DIR__ . '/fixtures/CollectionHasSpecifyingExtension/extension.neon',
         ];
     }
 }

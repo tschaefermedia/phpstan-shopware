@@ -23,7 +23,7 @@
       "Shopware\\PhpStan\\Tests\\": "tests/"
     },
     "classmap": [
-      "tests/data"
+      "tests/Rule/fixtures"
     ]
   },
   "config": {

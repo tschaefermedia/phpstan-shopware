@@ -18,7 +18,7 @@ class NoDALFilterByIDTest extends RuleTestCase
 {
     public function testAnalyse(): void
     {
-        $this->analyse([ __DIR__ . '/../data/NoDALFilterByID/criteria.php'], [
+        $this->analyse([ __DIR__ . '/fixtures/NoDALFilterByID/criteria.php'], [
             [
                 <<<EOF
 Using "id" directly in EqualsFilter or EqualsAnyFilter is forbidden. Pass the ids directly to the constructor of Criteria or use setIds instead

@@ -12,7 +12,7 @@ class ClassExtendUsesAbstractClassWhenExistingTest extends RuleTestCase
 {
     public function testAnalyse(): void
     {
-        $this->analyse([__DIR__ . '/../data/ClassExtendUsesAbstractClassWhenExisting/extends.php'], [
+        $this->analyse([__DIR__ . '/fixtures/ClassExtendUsesAbstractClassWhenExisting/extends.php'], [
             [
                 <<<EOF
 Class Plugin should extend AbstractCore to not break typehints
