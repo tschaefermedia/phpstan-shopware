@@ -15,6 +15,7 @@ rules:
     - Shopware\PhpStan\Rule\SetForeignKeyRule
     - Shopware\PhpStan\Rule\NoEntityRepositoryInLoopRule
     - Shopware\PhpStan\Rule\NoSuperglobalsRule
+    - Shopware\PhpStan\Rule\BestPractise\PreferRouteEventRule
 
 services:
     -
