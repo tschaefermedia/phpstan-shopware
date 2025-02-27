@@ -9,7 +9,7 @@ rules:
     - Shopware\PhpStan\Rule\MethodBecomesAbstractRule
     - Shopware\PhpStan\Rule\NoDALFilterByID
     - Shopware\PhpStan\Rule\NoSessionInPaymentHandlerAndStoreApiRule
-    - Shopware\PhpStan\Rule\NoSymfonySessionInConstructor
+    - Shopware\PhpStan\Rule\NoSymfonySessionInConstructorRule
     - Shopware\PhpStan\Rule\NoUserEntityGetStoreTokenRule
     - Shopware\PhpStan\Rule\ScheduledTaskTooLowIntervalRule
     - Shopware\PhpStan\Rule\SetForeignKeyRule
