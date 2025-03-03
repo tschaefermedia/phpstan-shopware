@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Collector;
 
 use PhpParser\Node;
@@ -11,9 +13,9 @@ use PHPStan\Node\InClassNode;
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 
 /**
- * @phpstan-type Property array{line: int, readonly: bool, visibility: 'public' | 'protected' | 'private', static: bool}
- * 
- * @implements Collector<InClassNode,  array<string, Property>>
+ * @phpstan-type EntityProperty array{line: int, readonly: bool, visibility: 'public' | 'protected' | 'private', static: bool}
+ *
+ * @implements Collector<InClassNode, array{name: string, properties: array<string, EntityProperty>, methods: array<string, array{line: int|false}>}>
  */
 class DALEntityCollector implements Collector
 {
@@ -21,7 +23,10 @@ class DALEntityCollector implements Collector
     {
         return InClassNode::class;
     }
-    
+
+    /**
+     * @return array{name: string, properties: array<string, array{line: int, readonly: bool, visibility: 'public'|'protected'|'private', static: bool}>, methods: array<string, array{line: int|false}>}|null
+     */
     public function processNode(Node $node, Scope $scope): ?array
     {
         $classReflection = $scope->getClassReflection();
@@ -41,9 +46,7 @@ class DALEntityCollector implements Collector
         foreach ($node->getOriginalNode()->stmts as $property) {
             if ($property instanceof Property) {
                 foreach ($property->props as $prop) {
-                    if ($prop instanceof PropertyItem) {
-                        $propertyLineNumbers[(string) $prop->name->toString()] =  $property->getLine();
-                    }
+                    $propertyLineNumbers[(string) $prop->name->toString()] =  $property->getLine();
                 }
             }
         }

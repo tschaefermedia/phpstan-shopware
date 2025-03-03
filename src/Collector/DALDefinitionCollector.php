@@ -1,12 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Collector;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayItem;
+use PhpParser\Node\Expr\Cast\String_;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
+use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
@@ -15,8 +21,8 @@ use PHPStan\Analyser\Scope;
 use PHPStan\Collectors\Collector;
 use PHPStan\Node\InClassNode;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\TypeTraverser;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\AutoIncrementField;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\BreadcrumbField;
@@ -46,14 +52,13 @@ use Shopware\Core\System\CustomEntity\Schema\DynamicMappingEntityDefinition;
 
 /**
  * @phpstan-type EntityFields array<string, array{required: bool, computed: bool, runtime: bool}>
- * @implements Collector<InClassNode,  array{name: string, entity: string|null, fields: EntityFields}>
+ * @implements Collector<InClassNode, array{name: string, entity: string|null, fields: EntityFields}>
  */
 class DALDefinitionCollector implements Collector
 {
     public function __construct(
         private readonly ReflectionProvider $reflectionProvider,
-    ) {
-    }
+    ) {}
 
     public function getNodeType(): string
     {
@@ -62,11 +67,11 @@ class DALDefinitionCollector implements Collector
 
     /**
      * @param InClassNode $node
+     * @return array{name: string, entity: string|null, fields: EntityFields}|null
      */
     public function processNode(Node $node, Scope $scope): ?array
     {
         $classReflection = $scope->getClassReflection();
-
         if ($classReflection === null) {
             return null;
         }
@@ -80,117 +85,122 @@ class DALDefinitionCollector implements Collector
         }
 
         $entityName = $this->getEntityName($node, $scope);
-
-        if ($entityName === null) {
+        if ($entityName === '') {
             return null;
         }
 
         return [
             'name' => $entityName,
             'entity' => $this->getEntityClass($node, $scope),
-            'fields' => $this->getFields($node, $scope)
+            'fields' => $this->getFields($node, $scope),
         ];
     }
 
     private function getFieldName(New_ $newInstance, Scope $scope): string
     {
-        $class = $this->reflectionProvider->getClass((string) $newInstance->class);
+        if (!$newInstance->class instanceof Name) {
+            throw new \RuntimeException('Expected class name');
+        }
+
+        $className = $newInstance->class->toString();
+        $class = $this->reflectionProvider->getClass($className);
 
         if ($class->is(ChildCountField::class)) {
             return 'childCount';
         }
-
         if ($class->is(AutoIncrementField::class)) {
             return 'autoIncrement';
         }
-
         if ($class->is(VersionField::class)) {
             return 'versionId';
         }
-        ;
-
         if ($class->is(ParentFkField::class)) {
             return 'parentId';
         }
-
         if ($class->is(ParentAssociationField::class)) {
             return 'parent';
         }
-
         if ($class->is(TranslationsAssociationField::class)) {
             return 'translations';
         }
-
         if ($class->is(LockedField::class)) {
             return 'locked';
         }
-
         if ($class->is(CustomFields::class)) {
             return 'customFields';
         }
-
         if ($class->is(CreatedAtField::class)) {
             return 'createdAt';
         }
-
         if ($class->is(UpdatedAtField::class)) {
             return 'updatedAt';
         }
-
         if ($class->is(CreatedByField::class)) {
             return 'createdById';
         }
-
         if ($class->is(UpdatedByField::class)) {
             return 'updatedById';
         }
-
         if ($class->is(BreadcrumbField::class)) {
             return 'breadcrumb';
         }
 
         $args = $newInstance->getArgs();
+        if (empty($args)) {
+            throw new \RuntimeException(sprintf("Cannot handle field %s without arguments", $class->getName()));
+        }
 
-        if ($class->is(ReferenceVersionField::class)) {
-            $firstValue = $scope->getType($args[0]->value);
+        if ($class->is(ReferenceVersionField::class) && isset($args[0])) {
+            $firstArg = $args[0];
+            $firstValue = $scope->getType($firstArg->value);
+            $constantStrings = $firstValue->getConstantStrings();
 
-            // @phpstan-ignore-next-line phpstanApi.instanceofType
-            if ($firstValue instanceof ConstantStringType) {
-                $entityName = $firstValue->getValue();
+            if (!empty($constantStrings)) {
+                $entityName = $constantStrings[0]->getValue();
 
-                if ($firstValue->isClassString()) {
-                    $entityName = (new $entityName())->getEntityName();
+                try {
+                    /** @var class-string<EntityDefinition> */
+                    $className = $entityName;
+
+                    $entityInstance = new $className();
+                    $entityName = $entityInstance->getEntityName();
+                } catch (\Throwable) {
                 }
 
                 $storageName = $entityName . '_version_id';
-
                 $propertyName = explode('_', $storageName);
                 $propertyName = array_map('ucfirst', $propertyName);
-                $propertyName = lcfirst(implode('', $propertyName));
-
-                return $propertyName;
-            } else {
-                throw new \RuntimeException('Reference version field must be a constant string');
+                return lcfirst(implode('', $propertyName));
             }
+            return 'versionId';
         }
 
-        if ($class->is(TranslatedField::class) || $class->is(OneToManyAssociationField::class) || $class->is(ManyToOneAssociationField::class) || $class->is(OneToOneAssociationField::class) || $class->is(ManyToManyAssociationField::class)) {
-            if ($args[0]->value->value === null) {
-                if ($class->is(ChildrenAssociationField::class)) {
-                    return 'children';
-                }
+        if (
+            ($class->is(TranslatedField::class) ||
+                $class->is(OneToManyAssociationField::class) ||
+                $class->is(ManyToOneAssociationField::class) ||
+                $class->is(OneToOneAssociationField::class) ||
+                $class->is(ManyToManyAssociationField::class)) &&
+            isset($args[0]) &&
+            property_exists($args[0]->value, 'value')
+        ) {
 
-                throw new \RuntimeException(sprintf("Cannot handle field %s", $class->getName()));
+            if ($class->is(ChildrenAssociationField::class)) {
+                return 'children';
             }
 
-            return $args[0]->value->value;
+            if ($args[0]->value instanceof \PhpParser\Node\Scalar\String_) {
+                return $args[0]->value->value;
+            }
+
+            throw new \RuntimeException(sprintf("Cannot handle field %s with argument of type %s and value %s", $class->getName(), get_class($args[0]->value), json_encode($args[0]->value->value)));
         }
 
-        if ($args[1]->value->value === null) {
-            throw new \RuntimeException(sprintf("Cannot handle field %s", $class->getName()));
+        if (isset($args[1]) && $args[1]->value instanceof \PhpParser\Node\Scalar\String_) {
+            return (string) $args[1]->value->value;
         }
 
-        return $args[1]->value->value;
+        throw new \RuntimeException(sprintf("Cannot handle field %s with arguments %s", $class->getName(), json_encode($args)));
     }
 
     /**
@@ -200,32 +210,32 @@ class DALDefinitionCollector implements Collector
     {
         if ($methodCall instanceof MethodCall) {
             $flags = ['required' => false, 'computed' => false, 'runtime' => false];
+            $currentMethodCall = $methodCall;
 
-            while ($methodCall->var instanceof MethodCall) {
-                if ((string) $methodCall->name === 'addFlag') {
-                    foreach ($methodCall->getArgs() as $arg) {
-                        if ($arg->value instanceof New_) {
+            while ($currentMethodCall->var instanceof MethodCall) {
+                if ($currentMethodCall->name instanceof Identifier && (string) $currentMethodCall->name === 'addFlag') {
+                    foreach ($currentMethodCall->getArgs() as $arg) {
+                        if ($arg->value instanceof New_ && $arg->value->class instanceof Name) {
                             $className = $arg->value->class->toString();
                             if ($className === Required::class) {
                                 $flags['required'] = true;
                             }
-
                             if ($className === Runtime::class) {
                                 $flags['runtime'] = true;
                             }
-
                             if ($className === Computed::class) {
                                 $flags['computed'] = true;
                             }
                         }
                     }
                 }
-
-                $methodCall = $methodCall->var;
+                $currentMethodCall = $currentMethodCall->var;
             }
 
-            $fieldName = $this->getFieldName($methodCall->var, $scope);
-            $fields[$fieldName] = $flags;
+            if ($currentMethodCall->var instanceof New_) {
+                $fieldName = $this->getFieldName($currentMethodCall->var, $scope);
+                $fields[$fieldName] = $flags;
+            }
         }
 
         if ($methodCall instanceof New_) {
@@ -240,39 +250,44 @@ class DALDefinitionCollector implements Collector
     private function getFields(InClassNode $node, Scope $scope): array
     {
         $fields = [];
+        $nodeFinder = new NodeFinder();
 
         foreach ($node->getOriginalNode()->stmts as $method) {
-            if ($method instanceof ClassMethod && (string) $method->name === 'defineFields') {
+            if ($method instanceof ClassMethod && $method->name->name === 'defineFields') {
+                if ($method->stmts === null) {
+                    continue;
+                }
+
                 /** @var New_|null $fieldCollection */
-                $fieldCollection = (new NodeFinder())->findFirst($method->stmts, function (Node $node) {
-                    return $node instanceof New_ && $node->class instanceof FullyQualified && $node->class->toString() === FieldCollection::class;
+                $fieldCollection = $nodeFinder->findFirst($method->stmts, function (Node $node): bool {
+                    return $node instanceof New_ &&
+                        $node->class instanceof FullyQualified &&
+                        $node->class->toString() === FieldCollection::class;
                 });
 
-                if ($fieldCollection) {
+                if ($fieldCollection instanceof New_ && count($fieldCollection->getArgs())) {
                     $arrayArgument = $fieldCollection->getArgs()[0];
-
                     if ($arrayArgument->value instanceof Array_) {
                         foreach ($arrayArgument->value->items as $item) {
-                            if ($item instanceof ArrayItem) {
-                                if ($item->value instanceof MethodCall || $item->value instanceof New_) {
-                                    $this->handleField($fields, $item->value, $scope);
-                                }
+                            if (($item->value instanceof MethodCall || $item->value instanceof New_)) {
+                                $this->handleField($fields, $item->value, $scope);
                             }
                         }
                     }
                 }
 
-                $calls = (new NodeFinder())->find($method->stmts, function (Node $node) use ($scope) {
-                    if ($node instanceof MethodCall && $node->name->toString() === 'add') {
-                        $target = $scope->getType($node->var);
-                    }
-
-                    return $node instanceof MethodCall && $node->name->toString() === 'add' && $target && $target->accepts(new ObjectType(FieldCollection::class), true)->yes();
+                /** @var array<MethodCall> $calls */
+                $calls = $nodeFinder->find($method->stmts, function (Node $node): bool {
+                    return $node instanceof MethodCall &&
+                        $node->name instanceof Identifier &&
+                        $node->name->name === 'add';
                 });
 
                 foreach ($calls as $call) {
                     foreach ($call->getArgs() as $arg) {
-                        $this->handleField($fields, $arg->value, $scope);
+                        if ($arg->value instanceof MethodCall || $arg->value instanceof New_) {
+                            $this->handleField($fields, $arg->value, $scope);
+                        }
                     }
                 }
             }
@@ -281,20 +296,27 @@ class DALDefinitionCollector implements Collector
         return $fields;
     }
 
-    private function getEntityName(InClassNode $node, Scope $scope): ?string
+    private function getEntityName(InClassNode $node, Scope $scope): string
     {
+        $nodeFinder = new NodeFinder();
+
         foreach ($node->getOriginalNode()->stmts as $method) {
-            if ($method instanceof ClassMethod && (string) $method->name === 'getEntityName') {
-                $returnNode = (new NodeFinder())->findFirstInstanceOf($method->stmts, Return_::class);
+            if (
+                $method instanceof ClassMethod &&
+                $method->name->name === 'getEntityName' &&
+                $method->stmts !== null
+            ) {
+                /** @var Return_|null $returnNode */
+                $returnNode = $nodeFinder->findFirst($method->stmts, function (Node $node): bool {
+                    return $node instanceof Return_ && $node->expr !== null;
+                });
 
-                if ($returnNode === null) {
-                    continue;
-                }
-
-                $entityName = $scope->getType($returnNode->expr);
-
-                if ($entityName instanceof ConstantStringType) {
-                    return $entityName->getValue();
+                if ($returnNode instanceof Return_ && $returnNode->expr instanceof Expr) {
+                    $entityName = $scope->getType($returnNode->expr);
+                    $constantStrings = $entityName->getConstantStrings();
+                    if (!empty($constantStrings)) {
+                        return $constantStrings[0]->getValue();
+                    }
                 }
             }
         }
@@ -302,20 +324,28 @@ class DALDefinitionCollector implements Collector
         return '';
     }
 
-    private function getEntityClass(InClassNode $node, Scope $scope): ?string
+    private function getEntityClass(InClassNode $node, Scope $scope): string
     {
+        $nodeFinder = new NodeFinder();
+
         foreach ($node->getOriginalNode()->stmts as $method) {
-            if ($method instanceof ClassMethod && (string) $method->name === 'getEntityClass') {
-                $returnNode = (new NodeFinder())->findFirstInstanceOf($method->stmts, Return_::class);
+            if (
+                $method instanceof ClassMethod &&
+                $method->name->name === 'getEntityClass' &&
+                $method->stmts !== null
+            ) {
 
-                if ($returnNode === null) {
-                    continue;
-                }
+                /** @var Return_|null $returnNode */
+                $returnNode = $nodeFinder->findFirst($method->stmts, function (Node $node): bool {
+                    return $node instanceof Return_ && $node->expr !== null;
+                });
 
-                $entityName = $scope->getType($returnNode->expr);
-
-                if ($entityName instanceof ConstantStringType) {
-                    return $entityName->getValue();
+                if ($returnNode instanceof Return_ && $returnNode->expr instanceof Expr) {
+                    $entityName = $scope->getType($returnNode->expr);
+                    $constantStrings = $entityName->getConstantStrings();
+                    if (!empty($constantStrings)) {
+                        return $constantStrings[0]->getValue();
+                    }
                 }
             }
         }

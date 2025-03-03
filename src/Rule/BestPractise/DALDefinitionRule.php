@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\PhpStan\Rule\BestPractise;
 
 use PhpParser\Node;
@@ -12,8 +14,8 @@ use Shopware\PhpStan\Collector\DALEntityCollector;
 
 /**
  * @implements Rule<CollectedDataNode>
- * 
- * @phpstan-import-type Property from DALEntityCollector
+ *
+ * @phpstan-import-type EntityProperty from DALEntityCollector
  * @phpstan-import-type EntityFields from DALDefinitionCollector
  */
 class DALDefinitionRule implements Rule
@@ -33,39 +35,41 @@ class DALDefinitionRule implements Rule
         foreach ($definitions as $definition) {
             $entity = $entities[$definition['entity']] ?? null;
 
-            if ($entity == null) {
+            if ($entity === null) {
                 continue;
             }
 
             foreach ($definition['fields'] as $fieldName => $definitionField) {
                 if (!isset($entity['properties'][$fieldName])) {
                     $errors[] = RuleErrorBuilder::message(
-                        sprintf('The field "%s" in the definition "%s" is not defined in the entity "%s".', $fieldName, $definition['name'], $entity['name'])
+                        sprintf('The field "%s" in the definition "%s" is not defined in the entity "%s".', $fieldName, $definition['name'], $entity['name']),
                     )
                     ->identifier('shopware.bestPractise.dal.propertyMissing')
                         ->line(1)
                         ->file($entity['file'])
                         ->build();
+
+                    continue;
                 }
 
                 $field = $entity['properties'][$fieldName];
 
                 if ($field['readonly'] === true) {
                     $errors[] = RuleErrorBuilder::message(
-                        sprintf('The field "%s" in the definition "%s" is readonly in the entity "%s".', $fieldName, $definition['name'], $entity['name'])
+                        sprintf('The field "%s" in the definition "%s" is readonly in the entity "%s".', $fieldName, $definition['name'], $entity['name']),
                     )
                         ->identifier('shopware.bestPractise.dal.propertyReadonly')
-                        ->line($field['line'])
+                        ->line((int) $field['line'])
                         ->file($entity['file'])
                         ->build();
                 }
 
                 if ($field['visibility'] === 'private') {
                     $errors[] = RuleErrorBuilder::message(
-                        sprintf('The field "%s" in the definition "%s" is private. The EntityHydrator cannot fill private fields', $fieldName, $definition['name'])
+                        sprintf('The field "%s" in the definition "%s" is private. The EntityHydrator cannot fill private fields', $fieldName, $definition['name']),
                     )
                         ->identifier('shopware.bestPractise.dal.propertyPrivate')
-                        ->line($field['line'])
+                        ->line((int) $field['line'])
                         ->file($entity['file'])
                         ->build();
                 }
@@ -78,16 +82,16 @@ class DALDefinitionRule implements Rule
                         'has' . (string) preg_replace('/^has/', '', ucfirst($fieldName)),
                     ];
 
-                    $getterExists = array_any($getterMethods, function ($method) use ($entity) {
+                    $getterExists = $this->arrayAny($getterMethods, function ($method) use ($entity) {
                         return isset($entity['methods'][$method]);
                     });
 
                     if (!$getterExists) {
                         $errors[] = RuleErrorBuilder::message(
-                            sprintf('The field "%s" in the definition "%s" is protected, but has no getter method', $fieldName, $definition['name'])
+                            sprintf('The field "%s" in the definition "%s" is protected, but has no getter method', $fieldName, $definition['name']),
                         )
                             ->identifier('shopware.bestPractise.dal.noGetter')
-                            ->line($field['line'])
+                            ->line((int) $field['line'])
                             ->file($entity['file'])
                             ->build();
                     }
@@ -95,10 +99,10 @@ class DALDefinitionRule implements Rule
                     if (!$definitionField['runtime'] && !$definitionField['computed']) {
                         if (!isset($entity['methods']['set' . ucfirst($fieldName)])) {
                             $errors[] = RuleErrorBuilder::message(
-                                sprintf('The field "%s" in the definition "%s" is protected, but has no setter method', $fieldName, $definition['name'])
+                                sprintf('The field "%s" in the definition "%s" is protected, but has no setter method', $fieldName, $definition['name']),
                             )
                                 ->identifier('shopware.bestPractise.dal.noSetter')
-                                ->line($field['line'])
+                                ->line((int) $field['line'])
                                 ->file($entity['file'])
                                 ->build();
                         }
@@ -111,7 +115,7 @@ class DALDefinitionRule implements Rule
     }
 
     /**
-     * @return array<string, array{file: string, name: string, entity: string, fields: EntityFields}>
+     * @return array<string, array{file: string, name: string, entity: string|null, fields: array<string, array{required: bool, computed: bool, runtime: bool}>}>
      */
     private function mappedDefinitions(CollectedDataNode $collectedDataNode): array
     {
@@ -125,7 +129,7 @@ class DALDefinitionRule implements Rule
     }
 
     /**
-     * @return array<string, array{file: string, name: string, entity: string|null, fields: array<string, array{required: bool, computed: bool, runtime: bool}>}>
+     * @return array<string, array{file: string, name: string, properties: array<string, array{line: int, readonly: bool, visibility: 'private'|'protected'|'public', static: bool}>, methods: array<string, array{line: int|false}>}>
      */
     private function mappedEntities(CollectedDataNode $collectedDataNode): array
     {
@@ -136,5 +140,24 @@ class DALDefinitionRule implements Rule
         }
 
         return $entities;
+    }
+
+    /**
+     * Checks if any element in the array satisfies the predicate.
+     *
+     * @template T
+     * @param array<T> $array
+     * @param callable(T): bool $predicate
+     * @return bool
+     */
+    private function arrayAny(array $array, callable $predicate): bool
+    {
+        foreach ($array as $item) {
+            if ($predicate($item)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
