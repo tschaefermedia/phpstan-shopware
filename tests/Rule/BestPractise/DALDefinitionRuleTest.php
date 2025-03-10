@@ -39,11 +39,11 @@ class DALDefinitionRuleTest extends \PHPStan\Testing\RuleTestCase
         $this->analyse([__DIR__ . '/fixtures/DALDefinitionRule/missing-getter-setter.php'], [
             [
                 'The field "name" in the definition "foo" is protected, but has no getter method',
-                39,
+                42,
             ],
             [
                 'The field "name" in the definition "foo" is protected, but has no setter method',
-                39,
+                42,
             ],
         ]);
     }
