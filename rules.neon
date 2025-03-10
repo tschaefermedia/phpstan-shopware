@@ -16,9 +16,21 @@ rules:
     - Shopware\PhpStan\Rule\NoEntityRepositoryInLoopRule
     - Shopware\PhpStan\Rule\NoSuperglobalsRule
     - Shopware\PhpStan\Rule\BestPractise\PreferRouteEventRule
+    - Shopware\PhpStan\Rule\BestPractise\DALDefinitionRule
 
 services:
     -
         class: Shopware\PhpStan\Type\CollectionHasSpecifyingExtension
         tags:
             - phpstan.typeSpecifier.methodTypeSpecifyingExtension
+
+    -
+        class: Shopware\PhpStan\Collector\DALDefinitionCollector
+        tags:
+            - phpstan.collector
+
+    -
+        class: Shopware\PhpStan\Collector\DALEntityCollector
+        tags:
+            - phpstan.collector
+
