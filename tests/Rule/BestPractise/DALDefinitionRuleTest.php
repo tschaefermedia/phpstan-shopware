@@ -44,7 +44,7 @@ class DALDefinitionRuleTest extends \PHPStan\Testing\RuleTestCase
             [
                 'The field "name" in the definition "foo" is protected, but has no setter method',
                 39,
-            ]
+            ],
         ]);
     }
 

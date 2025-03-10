@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\Tests\Rule\BestPractise\fixtures\DALDefinitionRule;
 
 use Shopware\Core\Framework\DataAbstractionLayer\Entity;
@@ -10,6 +12,7 @@ use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\PrimaryKey;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\Flag\Required;
 use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
 use Shopware\Core\Framework\DataAbstractionLayer\Field\StringField;
+
 class FooDefinition extends EntityDefinition
 {
     public function getEntityName(): string
