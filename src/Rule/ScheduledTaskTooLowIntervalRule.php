@@ -20,7 +20,7 @@ use Shopware\Core\Framework\MessageQueue\ScheduledTask\ScheduledTask;
  */
 class ScheduledTaskTooLowIntervalRule implements Rule
 {
-    private const MIN_SCHEDULED_TASK_INTERVAL = 3600;
+    private const MIN_SCHEDULED_TASK_INTERVAL = 300;
 
     public function getNodeType(): string
     {
